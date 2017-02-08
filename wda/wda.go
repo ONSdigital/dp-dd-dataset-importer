@@ -169,9 +169,9 @@ type Dataset struct {
 							Text string `json:"$"`
 						} `json:"geographicalType"`
 					} `json:"types"`
-					Differentiators struct {
-						Differentiator string `json:"differentiator"`
-					} `json:"differentiators"`
+					//Differentiators struct {
+					//	Differentiator string `json:"differentiator"`
+					//} `json:"differentiators"`
 					AreaTypes struct {
 						AreaType []struct {
 							Abbreviation string `json:"abbreviation"`
