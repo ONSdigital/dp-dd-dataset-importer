@@ -1,5 +1,10 @@
 package wda
 
+import (
+	"time"
+	"encoding/json"
+)
+
 type Datasets struct {
 	Ons struct {
 		Base struct {
@@ -100,19 +105,7 @@ type Dataset struct {
 					Href string `json:"href"`
 				} `json:"url"`
 			} `json:"urls"`
-			RefMetadata struct {
-				RefMetadataItem struct {
-					Type string `json:"type"`
-					SystemID string `json:"systemId"`
-					Descriptions struct {
-						Description []struct {
-							XMLLang string `json:"@xml.lang"`
-							Text string `json:"$"`
-						} `json:"description"`
-					} `json:"descriptions"`
-					DisplayOrder int `json:"displayOrder"`
-				} `json:"refMetadataItem"`
-			} `json:"refMetadata"`
+			RefMetadata json.RawMessage `json:"refMetadata"`
 			Dimensions struct {
 				Dimension []struct {
 					DimensionID string `json:"dimensionId"`
@@ -184,23 +177,116 @@ type Dataset struct {
 			IsHidden string `json:"isHidden"`
 			IsGeoSignificant string `json:"isGeoSignificant"`
 			IsSparse string `json:"isSparse"`
-			Documents struct {
-				Document []struct {
-					Type string `json:"@type"`
-					Href struct {
-						XMLLang string `json:"@xml.lang"`
-						Text string `json:"$"`
-					} `json:"href"`
-					Filesize struct {
-						XMLLang string `json:"@xml.lang"`
-						Text string `json:"$"`
-					} `json:"filesize"`
-				} `json:"document"`
-			} `json:"documents"`
+			//Documents struct {
+			//	Document []struct {
+			//		Type string `json:"@type"`
+			//		Href struct {
+			//			XMLLang string `json:"@xml.lang"`
+			//			Text string `json:"$"`
+			//		} `json:"href"`
+			//		Filesize struct {
+			//			XMLLang string `json:"@xml.lang"`
+			//			Text string `json:"$"`
+			//		} `json:"filesize"`
+			//	} `json:"document"`
+			//} `json:"documents"`
 			ObsCount int `json:"obsCount"`
 			SuppressMap string `json:"suppressMap"`
 			SuppressChart string `json:"suppressChart"`
 			SuppressView string `json:"suppressView"`
 		} `json:"datasetDetail"`
 	} `json:"ons"`
+}
+
+type RefMetadata struct {
+	RefMetadataItem struct {
+		Type string `json:"type"`
+		SystemID string `json:"systemId"`
+		Descriptions struct {
+			Description []struct {
+				XMLLang string `json:"@xml.lang"`
+				Text string `json:"$"`
+			} `json:"description"`
+		} `json:"descriptions"`
+		DisplayOrder int `json:"displayOrder"`
+	} `json:"refMetadataItem"`
+}
+
+type RefMetadataArray struct {
+	RefMetadataItem []struct {
+		Type string `json:"type"`
+		SystemID string `json:"systemId"`
+		Descriptions struct {
+			Description []struct {
+				XMLLang string `json:"@xml.lang"`
+				Text string `json:"$"`
+			} `json:"description"`
+		} `json:"descriptions"`
+		DisplayOrder int `json:"displayOrder"`
+	} `json:"refMetadataItem"`
+}
+
+type Dimension struct {
+	Structure struct {
+		Header struct {
+			ID string `json:"ID"`
+			Test bool `json:"Test"`
+			Truncated bool `json:"Truncated"`
+			Prepared time.Time `json:"Prepared"`
+			Sender struct {
+				ID string `json:"@id"`
+				Name struct {
+					XMLLang string `json:"@xml.lang"`
+					Text string `json:"$"`
+				} `json:"Name"`
+				Contact struct {
+					Name struct {
+						XMLLang string `json:"@xml.lang"`
+						Text string `json:"$"`
+					} `json:"Name"`
+					Telephone string `json:"Telephone"`
+				} `json:"Contact"`
+			} `json:"Sender"`
+			Extracted time.Time `json:"Extracted"`
+		} `json:"Header"`
+		CodeLists struct {
+			CodeList struct {
+				ID string `json:"@id"`
+				AgencyID string `json:"@agencyID"`
+				Version string `json:"@version"`
+				IsFinal string `json:"@isFinal"`
+				Name []struct {
+					XMLLang string `json:"@xml.lang"`
+					Text string `json:"$"`
+				} `json:"Name"`
+				Code []struct {
+					Value string `json:"@value"`
+					Urn string `json:"@urn,omitempty"`
+					ParentCode string `json:"@parentCode,omitempty"`
+					Description []struct {
+						XMLLang string `json:"@xml.lang"`
+						Text string `json:"$"`
+					} `json:"Description"`
+					Annotations struct {
+						Annotation struct {
+							AnnotationType string `json:"AnnotationType"`
+							AnnotationText struct {
+								XMLLang string `json:"@xml.lang"`
+								Text string `json:"$"`
+							} `json:"AnnotationText"`
+						} `json:"Annotation"`
+					} `json:"Annotations,omitempty"`
+				} `json:"Code"`
+				Annotations struct {
+					Annotation struct {
+						AnnotationType string `json:"AnnotationType"`
+						AnnotationText struct {
+							XMLLang string `json:"@xml.lang"`
+							Text string `json:"$"`
+						} `json:"AnnotationText"`
+					} `json:"Annotation"`
+				} `json:"Annotations"`
+			} `json:"CodeList"`
+		} `json:"CodeLists"`
+	} `json:"Structure"`
 }

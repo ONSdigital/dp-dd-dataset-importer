@@ -18,6 +18,9 @@ import (
 )
 
 var downloadDir string = "downloaded"
+var datasetDir string = "datasets"
+var dimensionDir string = "dimensions"
+
 var outputDir string = "output"
 var datasetsFile string = downloadDir + "/datasets.json"
 
@@ -33,78 +36,142 @@ func main() {
 	flag.Parse()
 
 	if len(*datasetSource) > 0 {
-		// process single dataset
-		fmt.Println("Processing a single dataset: " + *datasetSource)
-		dataset := GetDataset(*datasetSource, *forceDownload)
-
-		// save
-		fileName := getFilename(*datasetSource)
-		outputFilePath := "./" + outputDir + "/" + fileName
-		saveObjectJson(dataset, outputFilePath)
-
-		// index
-		fmt.Println(len(*indexerUrl))
-		fmt.Println(*indexerUrl)
-		if len(*indexerUrl) > 0 {
-
-			fmt.Println("Sending document to indexer")
-			document := &model.Document{
-				Body:dataset,
-				Type:"dataset",
-			}
-			jsonBytes, err := json.Marshal(document)
-			if err != nil {
-				log.Fatal(err)
-			}
-			resp, err := http.Post(*indexerUrl, "application/json", bytes.NewReader(jsonBytes))
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Printf("%+v", resp)
-		}
-
+		ProcessDataset(*datasetSource, *forceDownload, *indexerUrl)
 		return
 	} else {
 		fmt.Println("Processing a collection of datasets: " + *datasetsSource)
-		ProcessDatasets(*datasetsSource, *limit, *forceDownload)
+		ProcessDatasets(*datasetsSource, *limit, *forceDownload, *indexerUrl)
 	}
 
 	fmt.Println("Finished")
 
 }
-func GetDataset(datasetSource string, forceDownload bool) *model.Dataset {
+
+func ProcessDataset(datasetSource string, forceDownload bool, indexerUrl string) {
+
+	fmt.Println("Processing a single dataset: " + datasetSource)
+	datasetPath := DownloadDataset(datasetSource, forceDownload)
+	dataset := MapDataset(datasetPath)
+
+	// save
+	fileName := getFilename(datasetSource)
+	outputFilePath :=  path.Join(outputDir, fileName)
+	saveObjectJson(dataset, outputFilePath)
+
+	// index
+	fmt.Println(len(indexerUrl))
+	fmt.Println(indexerUrl)
+	if len(indexerUrl) > 0 {
+
+		fmt.Println("Sending document to indexer")
+		document := &model.Document{
+			Body:dataset,
+			Type:"dataset",
+		}
+		jsonBytes, err := json.Marshal(document)
+		if err != nil {
+			log.Fatal(err)
+		}
+		resp, err := http.Post(indexerUrl, "application/json", bytes.NewReader(jsonBytes))
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%+v", resp)
+	}
+}
+
+func DownloadDataset(datasetSource string, forceDownload bool) string {
 
 	filePath := datasetSource
 
 	if content.IsURL(datasetSource) {
 		fileName := getFilename(datasetSource)
-		filePath := "./" + downloadDir + "/" + fileName
+		filePath := path.Join(downloadDir, datasetDir, fileName)
+		fmt.Println("download filepath:" + filePath)
 		downloadFile(datasetSource, filePath, forceDownload)
 	} else {
-		fmt.Println("URL was not provided. Attempting to read file locally")
+		fmt.Println("URL was not provided. Using local file")
 	}
 
+	return filePath
+}
+
+func MapDataset(filePath string) *model.Dataset {
 	reader := content.OpenReader(filePath)
 
-	var dataset = &wda.Dataset{}
-	content.Parse(reader, dataset)
+	var wdaDataset = &wda.Dataset{}
+	content.Parse(reader, wdaDataset)
 
-	fmt.Println("Dataset ID: " + dataset.Ons.DatasetDetail.ID)
+	fmt.Println("Dataset ID: " + wdaDataset.Ons.DatasetDetail.ID)
 
-	searchDataset := &model.Dataset{
-		ID:dataset.Ons.DatasetDetail.ID,
-		//Description:dataset.Ons.DatasetDetail.Names.Name[0].Text,
+	dataset := &model.Dataset{
+		ID:wdaDataset.Ons.DatasetDetail.ID,
+		//Description:wdaDataset.Ons.DatasetDetail.Names.Name[0].Text,
 	}
 
-	for _, dimension := range dataset.Ons.DatasetDetail.Dimensions.Dimension {
+	// refmetadata field can either be a single refmetadata object, or an array of them.
+	// Try and unmarshall as a refmetadata object first. If it fails then attempt to unmarshall as an array.
+	var metadata wda.RefMetadata
+	if err := json.Unmarshal([]byte(wdaDataset.Ons.DatasetDetail.RefMetadata), &metadata); err != nil {
+		var metadataArray wda.RefMetadataArray
+		if err := json.Unmarshal([]byte(wdaDataset.Ons.DatasetDetail.RefMetadata), &metadataArray); err != nil {
+			log.Fatal(err)
+		}
+
+		dataset.Description = metadataArray.RefMetadataItem[0].Descriptions.Description[0].Text
+		fmt.Println("found a metadata slice: " + dataset.Description)
+	} else {
+		dataset.Description = metadata.RefMetadataItem.Descriptions.Description[0].Text
+		fmt.Println("found a metadata field " + dataset.Description)
+	}
+
+	for _, dimension := range wdaDataset.Ons.DatasetDetail.Dimensions.Dimension {
 		fmt.Println("- DimensionId: " + dimension.DimensionID)
 		fmt.Println("- DimensionType: " + dimension.DimensionType)
 	}
 
-	return searchDataset
-
+	return dataset
 }
-func ProcessDatasets(datasetsSource string, limit int, forceDownload bool) {
+
+func DownloadDimension(dimensionSource string, forceDownload bool) string {
+	filePath := dimensionSource
+
+	if content.IsURL(dimensionSource) {
+		fileName := getFilename(dimensionSource)
+		filePath := path.Join(downloadDir, dimensionDir, fileName)
+		fmt.Printf("download filepath:" + filePath)
+		downloadFile(dimensionSource, filePath, forceDownload)
+	} else {
+		fmt.Println("URL was not provided. Attempting to read file locally")
+	}
+
+	return filePath
+}
+
+func MapDimension(filePath string) *model.Dimension {
+
+	reader := content.OpenReader(filePath)
+
+	var wdaDimension = &wda.Dimension{}
+	content.Parse(reader, wdaDimension)
+
+	fmt.Println("Dimension ID: " + wdaDimension.Structure.Header.ID)
+
+	dimension := &model.Dimension{
+		ID:wdaDimension.Structure.Header.ID,
+		//Description:dataset.Ons.DatasetDetail.Names.Name[0].Text,
+	}
+
+	//for _, dimension := range dataset.Ons.DatasetDetail.Dimensions.Dimension {
+	//	fmt.Println("- DimensionId: " + dimension.DimensionID)
+	//	fmt.Println("- DimensionType: " + dimension.DimensionType)
+	//}
+
+	return dimension
+}
+
+
+func ProcessDatasets(datasetsSource string, limit int, forceDownload bool, indexerUrl string) {
 	filePath := datasetsSource
 
 	if content.IsURL(datasetsSource) {
@@ -138,9 +205,9 @@ func ProcessDatasets(datasetsSource string, limit int, forceDownload bool) {
 
 			for _,url := range dataset.Urls.URL {
 				if url.Representation == "json" {
-					fmt.Println(datasets.Ons.Base.Href + url.Href)
-					fmt.Println(getFilename(url.Href))
-					//GetDataset(datasets.Ons.Base.Href + url.Href)
+					//fmt.Println(datasets.Ons.Base.Href + url.Href)
+					//fmt.Println(getFilename(url.Href))
+					ProcessDataset(datasets.Ons.Base.Href + url.Href, forceDownload, indexerUrl)
 				}
 			}
 
@@ -189,6 +256,12 @@ func downloadFile(source string, destination string, forceDownload bool) {
 		}
 
 		os.Remove(destination)
+	}
+
+	// make parent directories
+	err := os.MkdirAll(path.Dir(destination), os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	fmt.Println("Downloading file")
