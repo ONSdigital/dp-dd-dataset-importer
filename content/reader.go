@@ -5,17 +5,74 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 )
+
+func Download(source string, destination string, forceDownload bool) {
+
+	if _, err := os.Stat(destination); err == nil {
+		if !forceDownload {
+			fmt.Println("Download file " + destination + " already exists. Using local copy")
+			return
+		}
+
+		os.Remove(destination)
+	}
+
+	// make parent directories
+	err := os.MkdirAll(path.Dir(destination), os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Downloading file: " + source)
+	reader := OpenReader(source)
+	defer reader.Close()
+
+	file, err := os.Create(destination)
+	defer file.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = io.Copy(file, reader)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Download complete")
+}
+
+func SaveObjectJson(source interface{}, destination string) {
+
+	_ = os.MkdirAll(filepath.Dir(destination), os.ModePerm)
+
+	fmt.Println("Saving output file " + destination)
+	if _, err := os.Stat(destination); err == nil {
+		os.Remove(destination)
+	}
+	file, err := os.Create(destination)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(source)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 // OpenReader opens a reader on a local file or a url, as appropriate
 func OpenReader(endpoint string) io.ReadCloser {
 	if IsURL(endpoint) {
 		response, err := http.Get(endpoint)
 		if err != nil {
-			fmt.Println("Error calling endpoint!")
+			fmt.Println("Error calling endpoint")
 			panic(err)
 		}
 		return response.Body
@@ -31,7 +88,7 @@ func OpenReader(endpoint string) io.ReadCloser {
 }
 
 // Parse parses the content from the Reader into the data object
-func Parse(reader io.ReadCloser, data interface{}) {
+func ParseJson(reader io.ReadCloser, data interface{}) {
 	defer reader.Close()
 
 	body, err := ioutil.ReadAll(reader)
