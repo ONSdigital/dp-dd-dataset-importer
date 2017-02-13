@@ -1,6 +1,8 @@
 dp-dd-dataset-importer
 ================
 
+Download dataset data from the WDA API, and convert it into the data discovery dataset JSON format. 
+Saves output locally and can also send the output to the dp-dd-search-indexer
 
 ### Getting started
 
@@ -11,6 +13,7 @@ go build
 ```
 
 #### Importing a single dataset
+
 To import a single dataset use the -dataset flag with the WDA API URL of the dataset.
 ``` 
 ./dp-dd-dataset-importer -dataset http://web.ons.gov.uk/ons/api/data/datasetdetails/QS501EW.json?apikey={API-KEY}&context=Census&geog=2011STATH
@@ -21,13 +24,12 @@ The importer will save the response locally so running the application again wil
 ```
 Now that the file is downloaded and available locally you can specify it directly
 ``` 
-./dp-dd-dataset-importer -dataset QS501EW_2011STATH.json
+./dp-dd-dataset-importer -dataset downloaded/datasets/QS501EW.json
 ```
 By default the output dataset JSON will be stored in the output directory. If you also want to put the json directly into the search indexer use the -indexer flag and pass the indexer URL
 ```
-./dp-dd-dataset-importer -dataset downloaded/ASHE07H_2013WARDH_2015.json -indexer http://localhost:20050/index 
+./dp-dd-dataset-importer -dataset downloaded/datasets/ASHE07H.json -indexer http://localhost:20050/index 
 ```
-
 
 #### Importing multiple datasets
 
