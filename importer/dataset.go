@@ -73,10 +73,9 @@ func MapDataset(filePath string) *model.Dataset {
 		Title: wdaDataset.Ons.DatasetDetail.Names.Name[0].Text,
 	}
 
-	dataset.Description = mapDescription(wdaDataset.Ons.DatasetDetail.RefMetadata)
-
 	dataset.Metadata = &model.Metadata{
 		ReleaseDate: wdaDataset.Ons.DatasetDetail.PublicationDate,
+		Description: mapDescription(wdaDataset.Ons.DatasetDetail.RefMetadata),
 	}
 
 	for _, wdaDimension := range wdaDataset.Ons.DatasetDetail.Dimensions.Dimension {
@@ -108,9 +107,10 @@ func mapDescription(refMetaData json.RawMessage) string {
 	// Try and unmarshall as a refmetadata object first. If it fails then attempt to unmarshall as an array.
 	var metadata wda.RefMetadata
 	if err := json.Unmarshal([]byte(refMetaData), &metadata); err != nil {
+
 		var metadataArray wda.RefMetadataArray
 		if err := json.Unmarshal([]byte(refMetaData), &metadataArray); err != nil {
-			log.Fatal(err)
+			return string(refMetaData)
 		}
 
 		return metadataArray.RefMetadataItem[0].Descriptions.Description[0].Text
