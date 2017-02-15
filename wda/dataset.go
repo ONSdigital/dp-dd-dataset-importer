@@ -103,13 +103,13 @@ type Dataset struct {
 					//Differentiators struct {
 					//	Differentiator string `json:"differentiator"`
 					//} `json:"differentiators"`
-					AreaTypes struct {
-						AreaType []struct {
-							Abbreviation string `json:"abbreviation"`
-							Codename     string `json:"codename"`
-							Level        int    `json:"level"`
-						} `json:"areaType"`
-					} `json:"areaTypes"`
+					//AreaTypes struct {
+					//	AreaType []struct {
+					//		Abbreviation string `json:"abbreviation"`
+					//		Codename     string `json:"codename"`
+					//		Level        int    `json:"level"`
+					//	} `json:"areaType"`
+					//} `json:"areaTypes"`
 				} `json:"geographicalHierarchy"`
 			} `json:"geographicalHierarchies"`
 			IsHidden         string `json:"isHidden"`
