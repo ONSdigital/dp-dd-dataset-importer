@@ -13,14 +13,18 @@ import (
 	"strings"
 )
 
+// Read a dataset from WDA using the given datasetSource and save to local disk.
+// If the file has already been downloaded, the local copy will be used instead unless forceDownload is true.
+// Map it to the DD dataset json model and save to local disk.
+// If the indexerUrl is provided then the result will be sent to it.
 func ImportDataset(datasetSource string, forceDownload bool, indexerUrl string) {
 
 	fmt.Println("Importing dataset: " + datasetSource)
-	datasetPath := DownloadDataset(datasetSource, forceDownload)
-	dataset := MapDataset(datasetPath)
+	datasetPath := downloadDataset(datasetSource, forceDownload)
+	dataset := mapDataset(datasetPath)
 
 	// save
-	fileName := UrlToFilename(datasetSource)
+	fileName := urlToFilename(datasetSource)
 	outputFilePath := path.Join(OutputDir, fileName)
 	content.SaveObjectJson(dataset, outputFilePath)
 
@@ -46,13 +50,15 @@ func ImportDataset(datasetSource string, forceDownload bool, indexerUrl string) 
 	}
 }
 
-func DownloadDataset(datasetSource string, forceDownload bool) string {
+// downloadDataset if it does not already exist. Force a download by passing forceDownload=true
+// return the filepath to the downloaded file.
+func downloadDataset(datasetSource string, forceDownload bool) string {
 
 	filePath := datasetSource
 
 	if content.IsURL(datasetSource) {
 		fmt.Println("Importing dataset from URL:" + datasetSource)
-		fileName := UrlToFilename(datasetSource)
+		fileName := urlToFilename(datasetSource)
 		filePath := path.Join(DownloadDir, datasetDir, fileName)
 		content.Download(datasetSource, filePath, forceDownload)
 	} else {
@@ -62,7 +68,8 @@ func DownloadDataset(datasetSource string, forceDownload bool) string {
 	return filePath
 }
 
-func MapDataset(filePath string) *model.Dataset {
+// mapDataset from the given filePath in the WDA format to the model.Dataset structure.
+func mapDataset(filePath string) *model.Dataset {
 	reader := content.OpenReader(filePath)
 
 	var wdaDataset = &wda.Dataset{}
@@ -93,14 +100,16 @@ func MapDataset(filePath string) *model.Dataset {
 				wdaDimension.DimensionID+".json?"+queryString)
 
 		//fmt.Printf("wda dimension%+v\n", wdaDimension)
-		dimensionPath := DownloadDimension(dimensionUrl, false)
-		dimension := MapDimension(dimensionPath, wdaDimension.DimensionType)
+		dimensionPath := downloadDimension(dimensionUrl, false)
+		dimension := mapDimension(dimensionPath, wdaDimension.DimensionType)
 		dataset.Dimensions = append(dataset.Dimensions, dimension)
 	}
 
 	return dataset
 }
 
+// mapDescription handles the dynamic format of the WDA refMetaData field. Sometimes its an array and others its a single object.
+// If it cannot map the field as an object it attempts to map it as an array.
 func mapDescription(refMetaData json.RawMessage) string {
 
 	// refmetadata field can either be a single refmetadata object, or an array of them.
@@ -110,12 +119,11 @@ func mapDescription(refMetaData json.RawMessage) string {
 
 		var metadataArray wda.RefMetadataArray
 		if err := json.Unmarshal([]byte(refMetaData), &metadataArray); err != nil {
-			return string(refMetaData)
+			return string(refMetaData) // if all else fails just return it as a string.
 		}
 
 		return metadataArray.RefMetadataItem[0].Descriptions.Description[0].Text
 	} else {
 		return metadata.RefMetadataItem.Descriptions.Description[0].Text
 	}
-
 }

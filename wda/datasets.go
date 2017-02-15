@@ -1,5 +1,6 @@
 package wda
 
+// The WDA dataset list structure.
 type Datasets struct {
 	Ons struct {
 		Base struct {

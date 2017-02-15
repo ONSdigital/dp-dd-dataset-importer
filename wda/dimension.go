@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// The WDA dimension structure.
 type Dimension struct {
 	Structure struct {
 		Header struct {

@@ -13,6 +13,8 @@ import (
 	"strings"
 )
 
+// Download a file from the given source, and save it in the given destination.
+// If the file already exists locally it will not be downloaded again, unless forceDownload is true.
 func Download(source string, destination string, forceDownload bool) {
 
 	if _, err := os.Stat(destination); err == nil {
@@ -46,6 +48,7 @@ func Download(source string, destination string, forceDownload bool) {
 	fmt.Println("Download complete")
 }
 
+// SaveObjectJson - save the given
 func SaveObjectJson(source interface{}, destination string) {
 
 	_ = os.MkdirAll(filepath.Dir(destination), os.ModePerm)

@@ -13,7 +13,9 @@ var OutputDir string = "output"
 var DownloadDir string = "downloaded"
 var DatasetsFile string = DownloadDir + "/datasets.json"
 
-func UrlToFilename(sourceUrl string) string {
+
+// urlToFilename - determine an appropriate filename from a WDA API URL.
+func urlToFilename(sourceUrl string) string {
 	url, err := url.Parse(sourceUrl)
 	if err != nil {
 		log.Fatal(url)

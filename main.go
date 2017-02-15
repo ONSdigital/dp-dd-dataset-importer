@@ -14,17 +14,17 @@ func main() {
 	datasetsSource := flag.String("datasets", importer.DatasetsFile, "URL or file of datasets to import.")
 	limit := flag.Int("limit", 0, "limit the number of datasets downloaded from each context")
 	forceDownload := flag.Bool("force", false, "if true then always download files from WDA, else use local files")
-	indexerUrl := flag.String("indexer", "", "The url of the search indexer service")
+	indexerURL := flag.String("indexer", "", "The url of the search indexer service")
 	flag.Parse()
 
 	if len(*datasetSource) > 0 {
 		fmt.Println("Importing a collection of datasets from " + *datasetsSource)
-		importer.ImportDataset(*datasetSource, *forceDownload, *indexerUrl)
+		importer.ImportDataset(*datasetSource, *forceDownload, *indexerURL)
 		return
-	} else {
-		fmt.Println("Importing a collection of datasets from " + *datasetsSource)
-		importer.ImportDatasets(*datasetsSource, *limit, *forceDownload, *indexerUrl)
 	}
+
+	fmt.Println("Importing a collection of datasets from " + *datasetsSource)
+	importer.ImportDatasets(*datasetsSource, *limit, *forceDownload, *indexerURL)
 
 	fmt.Println("Finished")
 

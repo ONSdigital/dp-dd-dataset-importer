@@ -10,12 +10,14 @@ import (
 	"path"
 )
 
-func DownloadDimension(dimensionSource string, forceDownload bool) string {
+// downloadDimension if it does not already exist. Force a download by passing forceDownload=true
+// return the filepath to the downloaded file.
+func downloadDimension(dimensionSource string, forceDownload bool) string {
 	filePath := dimensionSource
 
 	if content.IsURL(dimensionSource) {
 		fmt.Println("Importing dimension from URL:" + dimensionSource)
-		fileName := UrlToFilename(dimensionSource)
+		fileName := urlToFilename(dimensionSource)
 		filePath := path.Join(DownloadDir, DimensionDir, fileName)
 		content.Download(dimensionSource, filePath, forceDownload)
 	} else {
@@ -25,7 +27,9 @@ func DownloadDimension(dimensionSource string, forceDownload bool) string {
 	return filePath
 }
 
-func MapDimension(filePath string, dimensionType string) *model.Dimension {
+// mapDimension from the WDA API format to the model.Dimension structure.
+// the dimension type is only provided at the dataset level, hence it being passed in instead of mapped.
+func mapDimension(filePath string, dimensionType string) *model.Dimension {
 
 	reader := content.OpenReader(filePath)
 
@@ -56,6 +60,8 @@ func MapDimension(filePath string, dimensionType string) *model.Dimension {
 
 	return dimension
 }
+
+// mapDimensionOptionText - determine the option text format and map it as the identified type. It can either be a JSON object or an array
 func mapDimensionOptionText(optionDescription json.RawMessage) string {
 	var description wda.Description
 	if err := json.Unmarshal([]byte(optionDescription), &description); err != nil {

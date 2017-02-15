@@ -2,6 +2,7 @@ package wda
 
 import "encoding/json"
 
+// The WDA dataset structure.
 type Dataset struct {
 	Ons struct {
 		Base struct {

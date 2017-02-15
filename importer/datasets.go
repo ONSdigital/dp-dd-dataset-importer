@@ -6,11 +6,16 @@ import (
 	"github.com/ONSdigital/dp-dd-dataset-importer/wda"
 )
 
+// ImportDatasets - Read a list of datasets from WDA using the given datasetsSource and save to local disk.
+// A smaller number of datasets can be imported by specifying the limit > 0
+// If the file has already been downloaded, the local copy will be used instead unless forceDownload is true.
+// Map it to the DD dataset json model and save to local disk.
+// If the indexerUrl is provided then the result will be sent to it.
 func ImportDatasets(datasetsSource string, limit int, forceDownload bool, indexerUrl string) {
 	filePath := datasetsSource
 
 	if content.IsURL(datasetsSource) {
-		fileName := UrlToFilename(datasetsSource)
+		fileName := urlToFilename(datasetsSource)
 		filePath := "./" + DownloadDir + "/" + fileName
 		content.Download(datasetsSource, filePath, forceDownload)
 	} else {
