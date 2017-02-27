@@ -9,9 +9,11 @@ import (
 
 var datasetDir string = "datasets"
 var DimensionDir string = "dimensions"
+var HierarchyDir string = "hierarchies"
 var OutputDir string = "output"
 var DownloadDir string = "downloaded"
 var DatasetsFile string = DownloadDir + "/datasets.json"
+var HierarchiesFile string = DownloadDir + "/hierarchies.json"
 
 
 // urlToFilename - determine an appropriate filename from a WDA API URL.

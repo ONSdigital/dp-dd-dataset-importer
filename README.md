@@ -1,8 +1,11 @@
 dp-dd-dataset-importer
 ================
 
-Download dataset data from the WDA API, and convert it into the data discovery dataset JSON format. 
-Saves output locally and can also send the output to the dp-dd-search-indexer
+This project was created to read data from the WDA API and convert it into a format that can be used by the dp-dd-search-indexer.
+
+It can download dataset data from the WDA API, and convert it into the data discovery dataset JSON format. 
+It can download hierarchy data and convert it to the format required by the search indexer.
+It saves output locally and can also send the output to the dp-dd-search-indexer
 
 ### Getting started
 
@@ -49,6 +52,10 @@ You can limit the number of datasets processed from each context by using the li
 ```
 ./dp-dd-dataset-importer -datasets downloaded/datasets.json -limit 1
 ```
+
+#### Importing hierarchy data
+
+./dp-dd-dataset-importer -hierarchies http://data.ons.gov.uk/ons/api/data/hierarchies.json?apikey={API-KEY}
 
 ### Contributing
 
