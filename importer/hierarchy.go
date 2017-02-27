@@ -37,12 +37,12 @@ func mapHierarchyToAreas(filePath string) []*model.Area {
 	for _, wdaArea := range wdaHierarchy.Ons.GeographyList.Items.Item {
 
 		area := &model.Area{
-			ID:wdaArea.ItemCode,
 			Title:wdaArea.Labels.Label[0].NAMING_FAILED,
-			Level:wdaArea.AreaType.Level,
 			Type:wdaArea.AreaType.Codename,
-			Geography:wdaHierarchy.Ons.GeographyList.Geography.Names.Name[0].NAMING_FAILED,
-			GeographyId:wdaHierarchy.Ons.GeographyList.Geography.ID,
+			//ID:wdaArea.ItemCode,
+			//Level:wdaArea.AreaType.Level,
+			//Geography:wdaHierarchy.Ons.GeographyList.Geography.Names.Name[0].NAMING_FAILED,
+			//GeographyId:wdaHierarchy.Ons.GeographyList.Geography.ID,
 		}
 
 		fmt.Println("Area %+v", area)

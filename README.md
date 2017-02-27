@@ -55,7 +55,14 @@ You can limit the number of datasets processed from each context by using the li
 
 #### Importing hierarchy data
 
+```
 ./dp-dd-dataset-importer -hierarchies http://data.ons.gov.uk/ons/api/data/hierarchies.json?apikey={API-KEY}
+```
+Do note that the endpoint for indexing geographic areas is different from the dataset endpoint, so adding the indexer flag will look like this:
+
+```
+-indexer http://localhost:20050/index-area
+```
 
 ### Contributing
 

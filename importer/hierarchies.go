@@ -9,6 +9,8 @@ import (
 	"bytes"
 	"github.com/ONSdigital/dp-dd-search-indexer/model"
 	"log"
+	"crypto/sha1"
+	"encoding/base64"
 )
 
 func ImportHierarchies(hierarchiesSource string, forceDownload bool, indexerUrl string) {
@@ -27,7 +29,7 @@ func ImportHierarchies(hierarchiesSource string, forceDownload bool, indexerUrl 
 	var hierarchies = &wda.Hierarchies{}
 	content.ParseJson(reader, hierarchies)
 
-	for _, hierarchy := range hierarchies.Ons.GeographicalHierarchyList.GeographicalHierarchy{
+	for _, hierarchy := range hierarchies.Ons.GeographicalHierarchyList.GeographicalHierarchy {
 		fmt.Println("Importing hierarchy: " + hierarchy.Names.Name[0].Text)
 
 		for _, url := range hierarchy.Urls.URL {
@@ -35,16 +37,20 @@ func ImportHierarchies(hierarchiesSource string, forceDownload bool, indexerUrl 
 			if url.Representation == "json" {
 
 				// the default url provided from the hierarchy list adds levels 0,1, and 2. Here we add 3 and 4.
-				fullUrl := hierarchies.Ons.Base.Href + url.Href + ",3,4,5"
+				fullUrl := hierarchies.Ons.Base.Href + url.Href + ",3"
 				//fmt.Println(fullUrl)
-				filepath :=  downloadHierarchy(fullUrl, forceDownload)
+				filepath := downloadHierarchy(fullUrl, forceDownload)
 				areas := mapHierarchyToAreas(filepath)
 
 				if len(indexerUrl) > 0 {
 
 					for _, area := range areas {
-						fmt.Println("Sending document to indexer " + indexerUrl)
+
+						id := createHash(area.Title + area.Type)
+
+						fmt.Println("Sending document to indexer " + area.Title + " " + area.Type + " - hash: " + id)
 						document := &model.Document{
+							ID:   id,
 							Body: area,
 							Type: "area",
 						}
@@ -52,16 +58,27 @@ func ImportHierarchies(hierarchiesSource string, forceDownload bool, indexerUrl 
 						if err != nil {
 							log.Fatal(err)
 						}
-						resp, err := http.Post(indexerUrl, "application/json", bytes.NewReader(jsonBytes))
+						_, err = http.Post(indexerUrl, "application/json", bytes.NewReader(jsonBytes))
 						if err != nil {
 							log.Fatal(err)
 						}
-						fmt.Printf("%+v\n", resp)
+						//fmt.Printf("%+v\n", resp)
 					}
-
 
 				}
 			}
 		}
 	}
+}
+
+func createHash(input string) string {
+
+	h := sha1.New()
+	h.Write([]byte(input))
+
+	sha := base64.URLEncoding.EncodeToString(h.Sum(nil))
+	fmt.Println(input)
+	fmt.Printf("%x\n", sha)
+
+	return sha
 }
