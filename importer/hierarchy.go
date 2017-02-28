@@ -6,6 +6,8 @@ import (
 	"github.com/ONSdigital/dp-dd-dataset-importer/content"
 	"github.com/ONSdigital/dp-dd-dataset-importer/wda"
 	"github.com/ONSdigital/dp-dd-search-indexer/model"
+	"encoding/json"
+	"log"
 )
 
 // downloadHierarchy if it does not already exist. Force a download by passing forceDownload=true
@@ -32,26 +34,43 @@ func mapHierarchyToAreas(filePath string) []*model.Area {
 	var wdaHierarchy = &wda.Hierarchy{}
 	content.ParseJson(reader, wdaHierarchy)
 
-	var areas []*model.Area
-
-	for _, wdaArea := range wdaHierarchy.Ons.GeographyList.Items.Item {
-
-		area := &model.Area{
-			Title:wdaArea.Labels.Label[0].NAMING_FAILED,
-			Type:wdaArea.AreaType.Codename,
-			//ID:wdaArea.ItemCode,
-			//Level:wdaArea.AreaType.Level,
-			//Geography:wdaHierarchy.Ons.GeographyList.Geography.Names.Name[0].NAMING_FAILED,
-			//GeographyId:wdaHierarchy.Ons.GeographyList.Geography.ID,
-		}
-
-		fmt.Println("Area %+v", area)
-
-		areas = append(areas, area)
-	}
-
-	//fmt.Println("areas slice length:")
-	//fmt.Println(len(areas))
+	var areas []*model.Area = mapAreas(wdaHierarchy.Ons.GeographyList.Items.Item)
 
 	return areas
+}
+
+// mapDimensionOptionText - determine the option text format and map it as the identified type. It can either be a JSON object or an array
+func mapAreas(rawArea json.RawMessage) []*model.Area {
+	var wdaAreaArray wda.AreaArray
+	if err := json.Unmarshal([]byte(rawArea), &wdaAreaArray); err != nil {
+
+		var wdaArea wda.Area
+		if err := json.Unmarshal([]byte(rawArea), &wdaArea); err != nil {
+			log.Fatal(err)
+		}
+
+		var results []*model.Area
+
+		area := &model.Area{
+			Title:wdaArea.Labels.Label[0].Text,
+			Type:wdaArea.AreaType.Codename,
+		}
+
+		results = append(results, area)
+		return results
+
+	} else {
+
+		var results []*model.Area
+
+		for _, wdaArea := range wdaAreaArray {
+
+			area := &model.Area{
+				Title:wdaArea.Labels.Label[0].Text,
+				Type:wdaArea.AreaType.Codename,
+			}
+			results = append(results, area)
+		}
+		return results
+	}
 }
