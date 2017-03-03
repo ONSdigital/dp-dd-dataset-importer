@@ -1,16 +1,16 @@
 package importer
 
 import (
-	"fmt"
-	"github.com/ONSdigital/dp-dd-dataset-importer/wda"
-	"github.com/ONSdigital/dp-dd-dataset-importer/content"
-	"encoding/json"
-	"net/http"
 	"bytes"
-	"github.com/ONSdigital/dp-dd-search-indexer/model"
-	"log"
 	"crypto/sha1"
 	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"github.com/ONSdigital/dp-dd-dataset-importer/content"
+	"github.com/ONSdigital/dp-dd-dataset-importer/wda"
+	"github.com/ONSdigital/dp-dd-search-indexer/model"
+	"log"
+	"net/http"
 )
 
 func ImportHierarchies(hierarchiesSource string, forceDownload bool, indexerUrl string) {
@@ -27,7 +27,10 @@ func ImportHierarchies(hierarchiesSource string, forceDownload bool, indexerUrl 
 	reader := content.OpenReader(filePath)
 
 	var hierarchies = &wda.Hierarchies{}
-	content.ParseJson(reader, hierarchies)
+	err := content.ParseJson(reader, hierarchies)
+	if err != nil {
+		fmt.Println("Failed to deserialise the json for the hierarchy list.")
+	}
 
 	for _, hierarchy := range hierarchies.Ons.GeographicalHierarchyList.GeographicalHierarchy {
 		fmt.Println("Importing hierarchy: " + hierarchy.Names.Name[0].Text)

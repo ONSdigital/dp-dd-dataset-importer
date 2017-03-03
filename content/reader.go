@@ -91,13 +91,13 @@ func OpenReader(endpoint string) io.ReadCloser {
 }
 
 // Parse parses the content from the Reader into the data object
-func ParseJson(reader io.ReadCloser, data interface{}) {
+func ParseJson(reader io.ReadCloser, data interface{}) error {
 	defer reader.Close()
 
 	body, err := ioutil.ReadAll(reader)
 	if err != nil {
 		fmt.Printf("Error reading body! %s\n", err)
-		panic(err.Error())
+		return err
 	}
 
 	err = json.Unmarshal(body, data)
@@ -115,9 +115,10 @@ func ParseJson(reader io.ReadCloser, data interface{}) {
 		default:
 			fmt.Printf("Unable to unmarshal data. Error=%T, data=%s\n", t, string(body))
 		}
-		panic(err)
+		return err
 	}
 
+	return nil
 }
 
 func IsURL(file string) bool {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ONSdigital/dp-dd-dataset-importer/content"
 	"github.com/ONSdigital/dp-dd-dataset-importer/wda"
+	"log"
 )
 
 // ImportDatasets - Read a list of datasets from WDA using the given datasetsSource and save to local disk.
@@ -25,35 +26,43 @@ func ImportDatasets(datasetsSource string, limit int, forceDownload bool, indexe
 	reader := content.OpenReader(filePath)
 
 	var datasets = &wda.Datasets{}
-	content.ParseJson(reader, datasets)
+	err := content.ParseJson(reader, datasets)
+	if err != nil {
+		fmt.Println("Failed to deserialise json for the list of datasets.")
+		return
+	}
 
-	var datasetIdsAlreadyProcessed []string
+	var datasetIdsAlreadyProcessed map[string]struct{} = make(map[string]struct{})
 
 	for _, context := range datasets.Ons.DatasetList.Contexts.Context {
 		fmt.Println("Importing datasets in WDA context: " + context.ContextName)
 		count := 0
 
-	ToNextDataset:
+		log.Printf("Number of datasets %v \n", len(context.Datasets.Dataset))
+
 		for _, dataset := range context.Datasets.Dataset {
 
-			for _, item := range datasetIdsAlreadyProcessed {
-				//fmt.Println("checking if item has been processed: item " + dataset.ID + " against " + item)
-				if item == dataset.ID {
-					fmt.Println("already processed dataset with ID " + dataset.ID + ", ignoring this one")
-					break ToNextDataset
-				}
+			log.Printf("dataset id: %v", dataset.ID)
+
+			if _, exists := datasetIdsAlreadyProcessed[dataset.ID]; exists {
+				fmt.Println("already processed dataset with ID " + dataset.ID + ", ignoring this one")
+				continue
 			}
 
 			for _, url := range dataset.Urls.URL {
 				if url.Representation == "json" {
+					fmt.Println("Processing dataset " + dataset.ID + "")
 					ImportDataset(datasets.Ons.Base.Href+url.Href, forceDownload, indexerUrl)
-					datasetIdsAlreadyProcessed = append(datasetIdsAlreadyProcessed, dataset.ID)
+					datasetIdsAlreadyProcessed[dataset.ID] = struct{}{}
+					log.Printf("datasets processed: %v", datasetIdsAlreadyProcessed)
+
 				}
 			}
 
 			if limit > 0 {
 				count++
 				if count == limit {
+					fmt.Println("hit the limit ")
 					break
 				}
 			}

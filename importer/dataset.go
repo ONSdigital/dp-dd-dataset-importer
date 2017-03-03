@@ -21,7 +21,10 @@ func ImportDataset(datasetSource string, forceDownload bool, indexerUrl string) 
 
 	fmt.Println("Importing dataset: " + datasetSource)
 	datasetPath := downloadDataset(datasetSource, forceDownload)
-	dataset := mapDataset(datasetPath)
+	dataset, err := mapDataset(datasetPath)
+	if err != nil {
+		return
+	}
 
 	// save
 	fileName := urlToFilename(datasetSource)
@@ -69,11 +72,15 @@ func downloadDataset(datasetSource string, forceDownload bool) string {
 }
 
 // mapDataset from the given filePath in the WDA format to the model.Dataset structure.
-func mapDataset(filePath string) *model.Dataset {
+func mapDataset(filePath string) (*model.Dataset, error) {
 	reader := content.OpenReader(filePath)
 
 	var wdaDataset = &wda.Dataset{}
-	content.ParseJson(reader, wdaDataset)
+	err := content.ParseJson(reader, wdaDataset)
+	if err != nil {
+		fmt.Printf("Failed to deserialise the json dataset file %v\n", filePath)
+		return nil, err
+	}
 
 	dataset := &model.Dataset{
 		ID:    wdaDataset.Ons.DatasetDetail.ID,
@@ -105,7 +112,7 @@ func mapDataset(filePath string) *model.Dataset {
 		dataset.Dimensions = append(dataset.Dimensions, dimension)
 	}
 
-	return dataset
+	return dataset, nil
 }
 
 // mapDescription handles the dynamic format of the WDA refMetaData field. Sometimes its an array and others its a single object.

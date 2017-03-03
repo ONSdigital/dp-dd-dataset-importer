@@ -31,7 +31,7 @@ type Hierarchy struct {
 		} `json:"linkedNodes"`
 		GeographyList struct {
 			Geography struct {
-				ID string `json:"id"`
+				ID    string `json:"id"`
 				Names struct {
 					Name []struct {
 						XMLLang       string `json:"@xml.lang"`
@@ -55,10 +55,10 @@ type AreaArray []struct {
 	} `json:"labels"`
 	ItemCode   string `json:"itemCode"`
 	ParentCode string `json:"parentCode,omitempty"`
-	AreaType struct {
+	AreaType   struct {
 		Abbreviation string `json:"abbreviation"`
 		Codename     string `json:"codename"`
-		Level        int `json:"level"`
+		Level        int    `json:"level"`
 	} `json:"areaType"`
 	SubthresholdAreas string `json:"subthresholdAreas"`
 }
@@ -72,10 +72,10 @@ type Area struct {
 	} `json:"labels"`
 	ItemCode   string `json:"itemCode"`
 	ParentCode string `json:"parentCode,omitempty"`
-	AreaType struct {
+	AreaType   struct {
 		Abbreviation string `json:"abbreviation"`
 		Codename     string `json:"codename"`
-		Level        int `json:"level"`
+		Level        int    `json:"level"`
 	} `json:"areaType"`
 	SubthresholdAreas string `json:"subthresholdAreas"`
 }

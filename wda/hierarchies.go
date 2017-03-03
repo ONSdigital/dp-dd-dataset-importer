@@ -9,27 +9,27 @@ type Hierarchies struct {
 			Urls struct {
 				URL []struct {
 					Representation string `json:"@representation"`
-					Href string `json:"href"`
+					Href           string `json:"href"`
 				} `json:"url"`
 			} `json:"urls"`
 			Description string `json:"description"`
-			Name string `json:"name"`
+			Name        string `json:"name"`
 		} `json:"node"`
 		LinkedNodes struct {
 			LinkedNode struct {
 				Urls struct {
 					URL []struct {
 						Representation string `json:"@representation"`
-						Href string `json:"href"`
+						Href           string `json:"href"`
 					} `json:"url"`
 				} `json:"urls"`
-				Name string `json:"name"`
+				Name     string `json:"name"`
 				Relation string `json:"relation"`
 			} `json:"linkedNode"`
 		} `json:"linkedNodes"`
 		GeographicalHierarchyList struct {
 			GeographicalHierarchy []struct {
-				ID string `json:"id"`
+				ID    string `json:"id"`
 				Names struct {
 					Name []struct {
 						XMLLang string `json:"@xml.lang"`
@@ -39,7 +39,7 @@ type Hierarchies struct {
 				Urls struct {
 					URL []struct {
 						Representation string `json:"@representation"`
-						Href string `json:"href"`
+						Href           string `json:"href"`
 					} `json:"url"`
 				} `json:"urls"`
 				Types struct {

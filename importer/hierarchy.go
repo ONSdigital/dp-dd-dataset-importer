@@ -1,13 +1,13 @@
 package importer
 
 import (
+	"encoding/json"
 	"fmt"
-	"path"
 	"github.com/ONSdigital/dp-dd-dataset-importer/content"
 	"github.com/ONSdigital/dp-dd-dataset-importer/wda"
 	"github.com/ONSdigital/dp-dd-search-indexer/model"
-	"encoding/json"
 	"log"
+	"path"
 )
 
 // downloadHierarchy if it does not already exist. Force a download by passing forceDownload=true
@@ -27,12 +27,14 @@ func downloadHierarchy(hierarchySource string, forceDownload bool) string {
 	return filePath
 }
 
-
 func mapHierarchyToAreas(filePath string) []*model.Area {
 
 	reader := content.OpenReader(filePath)
 	var wdaHierarchy = &wda.Hierarchy{}
-	content.ParseJson(reader, wdaHierarchy)
+	err := content.ParseJson(reader, wdaHierarchy)
+	if err != nil {
+		fmt.Printf("Failed to deserialise the hierarchy json file %v" + filePath)
+	}
 
 	var areas []*model.Area = mapAreas(wdaHierarchy.Ons.GeographyList.Items.Item)
 
@@ -52,8 +54,8 @@ func mapAreas(rawArea json.RawMessage) []*model.Area {
 		var results []*model.Area
 
 		area := &model.Area{
-			Title:wdaArea.Labels.Label[0].Text,
-			Type:wdaArea.AreaType.Codename,
+			Title: wdaArea.Labels.Label[0].Text,
+			Type:  wdaArea.AreaType.Codename,
 		}
 
 		results = append(results, area)
@@ -66,8 +68,8 @@ func mapAreas(rawArea json.RawMessage) []*model.Area {
 		for _, wdaArea := range wdaAreaArray {
 
 			area := &model.Area{
-				Title:wdaArea.Labels.Label[0].Text,
-				Type:wdaArea.AreaType.Codename,
+				Title: wdaArea.Labels.Label[0].Text,
+				Type:  wdaArea.AreaType.Codename,
 			}
 			results = append(results, area)
 		}

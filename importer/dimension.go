@@ -34,7 +34,10 @@ func mapDimension(filePath string, dimensionType string) *model.Dimension {
 	reader := content.OpenReader(filePath)
 
 	var wdaDimension = &wda.Dimension{}
-	content.ParseJson(reader, wdaDimension)
+	err := content.ParseJson(reader, wdaDimension)
+	if err != nil {
+		fmt.Printf("Failed to deserialise dimension json file %v\n", filePath)
+	}
 
 	//fmt.Println("Dimension ID: " + wdaDimension.Structure.Header.ID)
 	dimension := &model.Dimension{
