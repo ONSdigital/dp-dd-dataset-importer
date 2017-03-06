@@ -86,6 +86,7 @@ func mapDataset(filePath string) (*model.Dataset, error) {
 	dataset := &model.Dataset{
 		ID:    wdaDataset.Ons.DatasetDetail.ID,
 		Title: wdaDataset.Ons.DatasetDetail.Names.Name[0].Text,
+		GeographicHierarchy: wdaDataset.Ons.DatasetDetail.GeographicalHierarchies.GeographicalHierarchy.ID,
 	}
 
 	dataset.Metadata = &model.Metadata{
