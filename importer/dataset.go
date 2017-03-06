@@ -40,6 +40,7 @@ func ImportDataset(datasetSource string, forceDownload bool, indexerUrl string) 
 		document := &model.Document{
 			Body: dataset,
 			Type: "dataset",
+			ID:dataset.ID,
 		}
 		jsonBytes, err := json.Marshal(document)
 		if err != nil {
