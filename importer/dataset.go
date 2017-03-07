@@ -40,7 +40,7 @@ func ImportDataset(datasetSource string, forceDownload bool, indexerUrl string) 
 		document := &model.Document{
 			Body: dataset,
 			Type: "dataset",
-			ID:dataset.ID,
+			ID:   dataset.ID,
 		}
 		jsonBytes, err := json.Marshal(document)
 		if err != nil {
@@ -84,9 +84,9 @@ func mapDataset(filePath string) (*model.Dataset, error) {
 	}
 
 	dataset := &model.Dataset{
-		ID:    wdaDataset.Ons.DatasetDetail.ID,
-		Title: wdaDataset.Ons.DatasetDetail.Names.Name[0].Text,
-		GeographicHierarchy: wdaDataset.Ons.DatasetDetail.GeographicalHierarchies.GeographicalHierarchy.ID,
+		ID:                  wdaDataset.Ons.DatasetDetail.ID,
+		Title:               wdaDataset.Ons.DatasetDetail.Names.Name[0].Text,
+		GeographicHierarchy: mapHierarchies(&wdaDataset.Ons.DatasetDetail.GeographicalHierarchies.GeographicalHierarchy),
 	}
 
 	dataset.Metadata = &model.Metadata{
@@ -115,6 +115,50 @@ func mapDataset(filePath string) (*model.Dataset, error) {
 	}
 
 	return dataset, nil
+}
+
+func mapHierarchies(wdaHierarchy *wda.HierarchySummary) []*model.GeographicHierarchySummary {
+	var hierarchySummaries []*model.GeographicHierarchySummary
+
+	hierarchy := &model.GeographicHierarchySummary{
+		ID:        wdaHierarchy.ID,
+		Title:     wdaHierarchy.Names.Name[0].Text,
+		AreaTypes: mapAreaTypes(wdaHierarchy.AreaTypes),
+	}
+
+	hierarchySummaries = append(hierarchySummaries, hierarchy)
+
+	return hierarchySummaries
+}
+
+func mapAreaTypes(wdaAreaType json.RawMessage) []*model.AreaType {
+	var mappedAreaTypes []*model.AreaType
+
+	var areaTypesArray wda.AreaTypesArray
+	if err := json.Unmarshal([]byte(wdaAreaType), &areaTypesArray); err != nil {
+
+		var areaType wda.AreaType
+		if err := json.Unmarshal([]byte(wdaAreaType), &areaType); err != nil {
+			return mappedAreaTypes
+		}
+
+		mappedAreaTypes = append(mappedAreaTypes, &model.AreaType{
+			Title: areaType.AreaType.Codename,
+			ID:    areaType.AreaType.Abbreviation,
+			Level: areaType.AreaType.Level,
+		})
+
+	} else {
+		for _, areaType := range areaTypesArray.AreaType {
+			mappedAreaTypes = append(mappedAreaTypes, &model.AreaType{
+				Title: areaType.Codename,
+				ID:    areaType.Abbreviation,
+				Level: areaType.Level,
+			})
+		}
+	}
+
+	return mappedAreaTypes
 }
 
 // mapDescription handles the dynamic format of the WDA refMetaData field. Sometimes its an array and others its a single object.
