@@ -52,12 +52,7 @@ func mapAreas(rawArea json.RawMessage) []*model.Area {
 		}
 
 		var results []*model.Area
-
-		area := &model.Area{
-			Title: wdaArea.Labels.Label[0].Text,
-			Type:  wdaArea.AreaType.Codename,
-		}
-
+		area := mapArea(wdaArea)
 		results = append(results, area)
 		return results
 
@@ -66,13 +61,17 @@ func mapAreas(rawArea json.RawMessage) []*model.Area {
 		var results []*model.Area
 
 		for _, wdaArea := range wdaAreaArray {
-
-			area := &model.Area{
-				Title: wdaArea.Labels.Label[0].Text,
-				Type:  wdaArea.AreaType.Codename,
-			}
+			area := mapArea(wdaArea)
 			results = append(results, area)
 		}
 		return results
 	}
+}
+func mapArea(wdaArea wda.Area) *model.Area {
+	area := &model.Area{
+		Title:  wdaArea.Labels.Label[0].Text,
+		Type:   wdaArea.AreaType.Codename,
+		TypeId: wdaArea.AreaType.Abbreviation,
+	}
+	return area
 }
