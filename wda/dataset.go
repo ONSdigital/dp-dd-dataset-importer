@@ -80,38 +80,7 @@ type Dataset struct {
 			} `json:"contact"`
 			StatisticalPopulations  string `json:"statisticalPopulations"`
 			GeographicalHierarchies struct {
-				GeographicalHierarchy struct {
-					ID    string `json:"id"`
-					Names struct {
-						Name []struct {
-							XMLLang string `json:"@xml.lang"`
-							Text    string `json:"$"`
-						} `json:"name"`
-					} `json:"names"`
-					Urls struct {
-						URL []struct {
-							Representation string `json:"@representation"`
-							Href           string `json:"href"`
-						} `json:"url"`
-					} `json:"urls"`
-					Time  int `json:"time"`
-					Types struct {
-						GeographicalType []struct {
-							XMLLang string `json:"@xml.lang"`
-							Text    string `json:"$"`
-						} `json:"geographicalType"`
-					} `json:"types"`
-					//Differentiators struct {
-					//	Differentiator string `json:"differentiator"`
-					//} `json:"differentiators"`
-					//AreaTypes struct {
-					//	AreaType []struct {
-					//		Abbreviation string `json:"abbreviation"`
-					//		Codename     string `json:"codename"`
-					//		Level        int    `json:"level"`
-					//	} `json:"areaType"`
-					//} `json:"areaTypes"`
-				} `json:"geographicalHierarchy"`
+				GeographicalHierarchy HierarchySummary `json:"geographicalHierarchy"`
 			} `json:"geographicalHierarchies"`
 			IsHidden         string `json:"isHidden"`
 			IsGeoSignificant string `json:"isGeoSignificant"`
@@ -135,6 +104,52 @@ type Dataset struct {
 			SuppressView  string `json:"suppressView"`
 		} `json:"datasetDetail"`
 	} `json:"ons"`
+}
+
+// A dataset contains only summary information about the hierarchy.
+type HierarchySummary struct {
+	ID    string `json:"id"`
+	Names struct {
+		Name []struct {
+			XMLLang string `json:"@xml.lang"`
+			Text    string `json:"$"`
+		} `json:"name"`
+	} `json:"names"`
+	Urls struct {
+		URL []struct {
+			Representation string `json:"@representation"`
+			Href           string `json:"href"`
+		} `json:"url"`
+	} `json:"urls"`
+	Time  int `json:"time"`
+	Types struct {
+		GeographicalType []struct {
+			XMLLang string `json:"@xml.lang"`
+			Text    string `json:"$"`
+		} `json:"geographicalType"`
+	} `json:"types"`
+	//Differentiators struct {
+	//	Differentiator string `json:"differentiator"`
+	//} `json:"differentiators"`
+	AreaTypes json.RawMessage `json:"areaTypes"`
+}
+
+// The area type is typically an array, but if there is only a single area type
+// then it is provided as an object instead of an array with a single item.
+type AreaTypesArray struct {
+	AreaType []struct {
+		Abbreviation string `json:"abbreviation"`
+		Codename     string `json:"codename"`
+		Level        int    `json:"level"`
+	} `json:"areaType"`
+}
+
+type AreaType struct {
+	AreaType struct {
+		Abbreviation string `json:"abbreviation"`
+		Codename     string `json:"codename"`
+		Level        int    `json:"level"`
+	} `json:"areaType"`
 }
 
 type RefMetadata struct {
