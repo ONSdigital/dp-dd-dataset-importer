@@ -117,6 +117,8 @@ func mapDataset(filePath string) (*model.Dataset, error) {
 	return dataset, nil
 }
 
+// Currently we only map a single hierarchy for a dataset. This may well need expanding to import multiple
+// hierarchies for a dataset.
 func mapHierarchies(wdaHierarchy *wda.HierarchySummary) []*model.GeographicHierarchySummary {
 	var hierarchySummaries []*model.GeographicHierarchySummary
 
@@ -131,6 +133,9 @@ func mapHierarchies(wdaHierarchy *wda.HierarchySummary) []*model.GeographicHiera
 	return hierarchySummaries
 }
 
+// The area types section in the wda json can be either an array or an object.
+// If there is more than one area type then it is represented as an array.
+// If there is a single area type then it is returned as an object instead of an array with a single entry.
 func mapAreaTypes(wdaAreaType json.RawMessage) []*model.AreaType {
 	var mappedAreaTypes []*model.AreaType
 
